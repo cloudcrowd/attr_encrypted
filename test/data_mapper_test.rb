@@ -1,9 +1,9 @@
 require File.dirname(__FILE__) + '/test_helper'
 
-DataMapper.setup(:default, "sqlite3::memory:")
+#DataMapper.setup(:default, "sqlite3::memory:")
 # To verify things work with the MySQL adapter, 
-# make sure you've created a unit_tests DB
-#DataMapper.setup(:default, "mysql://localhost/unit_tests")
+# make sure you've created a vendor_unit_tests DB
+DataMapper.setup(:default, "mysql://localhost/vendor_unit_tests")
 
 class AttrEncryptClient
   include DataMapper::Resource

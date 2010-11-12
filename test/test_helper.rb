@@ -3,8 +3,9 @@ require 'digest/sha2'
 
 require 'rubygems'
 
-require 'active_record'
-require 'datamapper'
-require 'sequel'
+#require 'active_record'
+require 'dm-core'
+require 'dm-migrations'
+#require 'sequel'
 
 require File.dirname(__FILE__) + '/../lib/attr_encrypted'
