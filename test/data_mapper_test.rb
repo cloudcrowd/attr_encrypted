@@ -1,8 +1,11 @@
 require File.dirname(__FILE__) + '/test_helper'
 
 DataMapper.setup(:default, "sqlite3::memory:")
+# To verify things work with the MySQL adapter, 
+# make sure you've created a unit_tests DB
+#DataMapper.setup(:default, "mysql://localhost/unit_tests")
 
-class Client
+class AttrEncryptClient
   include DataMapper::Resource
   
   property :id, Serial
@@ -20,33 +23,51 @@ class Client
   end
 end
 
+# Verify that property validations still work. Note 
+# that any attr_encrypted definitions must *follow*
+# the property definition for the underlying encrypted field.
+class AttrEncryptRequired
+  include DataMapper::Resource
+  
+  property :id, Serial
+  property :encrypted_email, String, :required => true
+  attr_encrypted :email, :key => 'a secret key'
+end
+
 DataMapper.auto_migrate!
 
 class DataMapperTest < Test::Unit::TestCase
   
   def setup
-    Client.all.each(&:destroy)
+    AttrEncryptClient.all.each(&:destroy)
   end
   
   def test_should_encrypt_email
-    @client = Client.new :email => 'test@example.com'
+    @client = AttrEncryptClient.new :email => 'test@example.com'
     assert @client.save
     assert_not_nil @client.encrypted_email
     assert_not_equal @client.email, @client.encrypted_email
-    assert_equal @client.email, Client.first.email
+    assert_equal @client.email, AttrEncryptClient.first.email
+  end
+
+  def test_required_property
+    another_client = AttrEncryptRequired.create :email => 'recless@example.com'
+    assert another_client.clean?
+    assert_not_nil another_client.encrypted_email
+    assert_not_equal another_client.email, another_client.encrypted_email
   end
   
   def test_should_marshal_and_encrypt_credentials
-    @client = Client.new
+    @client = AttrEncryptClient.new
     assert @client.save
     assert_not_nil @client.encrypted_credentials
     assert_not_equal @client.credentials, @client.encrypted_credentials
-    assert_equal @client.credentials, Client.first.credentials
-    assert Client.first.credentials.is_a?(Hash)
+    assert_equal @client.credentials, AttrEncryptClient.first.credentials
+    assert AttrEncryptClient.first.credentials.is_a?(Hash)
   end
   
   def test_should_encode_by_default
-    assert Client.attr_encrypted_options[:encode]
+    assert AttrEncryptClient.attr_encrypted_options[:encode]
   end
   
 end
