@@ -34,6 +34,13 @@ class AttrEncryptRequired
   attr_encrypted :email, :key => 'a secret key'
 end
 
+class AttrEncryptImplicit
+  include DataMapper::Resource
+  
+  property :id, Serial
+  attr_encrypted :email, :key => 'a secret key'
+end
+
 DataMapper.auto_migrate!
 
 class DataMapperTest < Test::Unit::TestCase
@@ -50,13 +57,6 @@ class DataMapperTest < Test::Unit::TestCase
     assert_equal @client.email, AttrEncryptClient.first.email
   end
 
-  def test_required_property
-    another_client = AttrEncryptRequired.create :email => 'recless@example.com'
-    assert another_client.clean?
-    assert_not_nil another_client.encrypted_email
-    assert_not_equal another_client.email, another_client.encrypted_email
-  end
-  
   def test_should_marshal_and_encrypt_credentials
     @client = AttrEncryptClient.new
     assert @client.save
@@ -68,6 +68,22 @@ class DataMapperTest < Test::Unit::TestCase
   
   def test_should_encode_by_default
     assert AttrEncryptClient.attr_encrypted_options[:encode]
+  end
+
+  def test_required_property
+    required = AttrEncryptRequired.create :email => 'recless@example.com'
+    assert required.clean?
+    assert_not_nil required.encrypted_email
+    assert_not_equal required.email, required.encrypted_email
+  end
+
+  def test_implicit_property
+    implicit = AttrEncryptImplicit.create :email => 'recless@example.net'
+    assert implicit.clean?
+    assert_not_nil implicit.encrypted_email
+    assert_not_equal implicit.email, implicit.encrypted_email
+    # Fails:
+    #assert_nothing_raised { assert_equal implicit.email, AttrEncryptClient.first.email }
   end
   
 end

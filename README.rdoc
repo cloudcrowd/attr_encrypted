@@ -290,6 +290,23 @@ NOTE: This only works if all records are encrypted with the same encryption key 
 
 Just like the default options for <tt>ActiveRecord</tt>, the <tt>:encode</tt> option is set to true by default since you'll be storing everything in a database.
 
+==== Attributes follow Properties
+
+When you define an encrypted attribute for DataMapper, your definition needs to follow the underlying encrypted property's definition. For example,
+
+  property encrypted_secret_key, String, :required => true, length => 100
+  attr_encrypted secret_key, :key => 'my key for keys'
+
+Doing it in the opposite order will not work at all.  
+
+Also, it should go without saying that attributes that are not defined as properties are not persisted. The following model contains only one column:
+
+  class NoImplicitProperties
+    include DataMapper::Resource 
+    
+    property id, Serial
+    attr_encrypted email, :key => 'my key for keys'
+  end
 
 == Note on Patches/Pull Requests
 
